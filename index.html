@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maraboina Sai Sruthi, Software Engineer</title>
+<meta name="description" content="Maraboina Sai Sruthi is a software engineer at Anumana in Bengaluru, building AI for ECG signals and 3D cardiac anatomy.">
+<meta name="theme-color" content="#FFF3F0">
+<script>
+  // Set theme and the "js" flag before first paint so nothing flashes.
+  (function () {
+    var d = document.documentElement, t = null;
+    d.classList.add('js');
+    try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    d.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="preload" href="assets/fonts/adventor-bold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/inter-regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- interactive layer: a probe cursor that eases after the mouse and trails a comet -->
+<canvas id="cursorfx" aria-hidden="true"></canvas>
+<div id="probe" aria-hidden="true"><i></i></div>
+
+<header class="bar" id="bar">
+  <a class="mark" href="#top" aria-label="Maraboina Sai Sruthi, back to top">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 12 5 6M12 12l7-5M12 12v8"/></g>
+      <g fill="currentColor"><circle cx="12" cy="12" r="2.4"/><circle cx="5" cy="6" r="1.8"/><circle cx="19" cy="7" r="1.8"/><circle cx="12" cy="20" r="1.8"/></g>
+    </svg>
+    <span>Maraboina Sai Sruthi</span>
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a href="#work">Work</a>
+    <a href="#projects">Projects</a>
+    <a href="#skills">Skills</a>
+    <a href="#education">Education</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="tools">
+    <a class="btn small" href="resume.pdf" data-resume>Resume</a>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Dark mode" aria-pressed="false">
+      <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Hero: an interactive map of the work -->
+  <section class="hero" id="top" aria-labelledby="name">
+    <div class="hero-text">
+      <p class="role">Software &amp; Machine-Learning Engineer, Bengaluru</p>
+      <h1 id="name"><span class="ln"><span>Maraboina</span></span> <span class="ln"><span>Sai Sruthi</span></span></h1>
+      <div class="hero-side">
+        <p class="lede">I build machine-learning systems end to end — computer vision, generative AI and RAG, and the backends that serve them. Here is a map of what I've shipped.</p>
+        <div class="cta">
+          <a class="btn solid" href="#work">See the work</a>
+          <a class="btn" href="#contact">Get in touch</a>
+        </div>
+      </div>
+    </div>
+
+    <figure class="hero-graph" id="heroFig">
+      <canvas id="heroGraph" role="img"
+              aria-label="A map of my projects — VineNet, PVC detection, 3D anatomy, Chat ECG, SABA, CatVision and GreenDesk — orbiting a hub. Drag a node, or use the links below to jump to a project."></canvas>
+      <figcaption>A map of what I've built — drag it around, or tap a node to jump in.</figcaption>
+      <ul class="vh-links">
+        <li><a href="#projects">VineNet</a></li>
+        <li><a href="#work">PVC detection</a></li>
+        <li><a href="#work">3D anatomy on heart meshes</a></li>
+        <li><a href="#work">Chat ECG preprocessing</a></li>
+        <li><a href="#earlier">SABA chatbot</a></li>
+        <li><a href="#earlier">CatVision</a></li>
+        <li><a href="#earlier">GreenDesk</a></li>
+      </ul>
+    </figure>
+  </section>
+
+  <div class="wrap">
+
+    <!-- Anumana -->
+    <section class="sec" id="work" aria-labelledby="h-work">
+      <header class="sec-head">
+        <h2 id="h-work">Work at Anumana</h2>
+        <p>Software Engineer, Bengaluru. June 2025 to present.</p>
+      </header>
+
+      <article class="case">
+        <div class="case-text">
+          <h3>Detecting and localizing PVCs on intracardiac ECG</h3>
+          <p>A two-stage system for premature ventricular contractions. Stage 1 combines neural-network detection with clinical rules. Stage 2 localizes where each PVC originates, using eikonal-equation simulations of cardiac activation.</p>
+          <dl class="report">
+            <div><dt>precision, stage 1</dt><dd>0.94</dd></div>
+            <div><dt>recordings</dt><dd>9M+</dd></div>
+            <div><dt>stage 2</dt><dd>eikonal activation simulation</dd></div>
+            <div><dt>status</dt><dd>in development</dd></div>
+          </dl>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">stage 1 and stage 2</span>
+          <canvas id="pvcViz" role="img" aria-label="Diagram: an ECG strip with one PVC flagged by stage 1, and an activation map with wavefronts spreading from the localized origin for stage 2."></canvas>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div class="case-text">
+          <h3>Finding ablation landmarks on 3D heart meshes</h3>
+          <p>Identifies ablation landmarks on CT-derived heart meshes: the mitral isthmus, posterior wall and interatrial septum. It combines surface-normal ray casting, Isolation Forest, convex hull fitting, morphological operations, mesh connectivity and Dijkstra's algorithm. Developed and deployed.</p>
+          <dl class="report">
+            <div><dt>runtime</dt><dd>under 10 ms</dd></div>
+            <div><dt>landmarks</dt><dd>3</dd></div>
+            <div><dt>input</dt><dd>CT-derived heart meshes</dd></div>
+            <div><dt>status</dt><dd>deployed</dd></div>
+          </dl>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">3D mesh, drag to rotate</span>
+          <canvas id="meshViz" tabindex="0" role="img" aria-label="Rotating wireframe heart-like mesh with three highlighted landmark regions: mitral isthmus, posterior wall and interatrial septum. Drag or use the arrow keys to rotate."></canvas>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div class="case-text">
+          <h3>Preprocessing photographed ECGs for Chat ECG</h3>
+          <p>Chat ECG is an AI clinical platform: you photograph an ECG and it returns biomarkers and disease predictions from models trained on ECGs. Phone photos come out warped, so — as the preprocessing step before those models run — I trained a fully convolutional network to predict a 3D document mesh and a 2D unwarping grid for each photo and flatten it. I designed the quality-evaluation framework around grid-line straightness and SSIM, and gave an internal tech talk on the pipeline.</p>
+          <dl class="report">
+            <div><dt>training images</dt><dd>100K+</dd></div>
+            <div><dt>validation MSE</dt><dd>0.00279</dd></div>
+            <div><dt>predicts</dt><dd>3D mesh, 2D grid</dd></div>
+            <div><dt>feeds</dt><dd>disease-prediction models</dd></div>
+          </dl>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">preprocessing: photo → flat grid</span>
+          <canvas id="warpViz" role="img" aria-label="An ECG sheet drawn as a warped photo. A slider flattens it into a straight grid, and a readout shows how straight the grid lines are."></canvas>
+          <div class="panel-ctl">
+            <label for="warpRange">Unwarp</label>
+            <input id="warpRange" type="range" min="0" max="100" value="0">
+            <output id="warpOut" for="warpRange" class="mono">straightness 0.000</output>
+          </div>
+        </figure>
+      </article>
+    </section>
+
+    <!-- Interext -->
+    <section class="sec" id="earlier" aria-labelledby="h-earlier">
+      <header class="sec-head">
+        <h2 id="h-earlier">Before that, Interext Technologies</h2>
+        <p>Research Intern and Junior IT Software Consultant, remote. April to May 2025.</p>
+      </header>
+      <article class="case">
+        <div class="case-text">
+          <h3>SABA: document extraction, and a chatbot that answers from it</h3>
+          <p>I automated the ETL pipeline behind the SABA chatbot: extracting and structuring content from documents, then answering questions against it with a RAG framework. It cut costs by 97.6% and boosted efficiency 3.4x.</p>
+          <dl class="report">
+            <div><dt>pipeline</dt><dd>extract → retrieve → answer</dd></div>
+            <div><dt>approach</dt><dd>RAG framework</dd></div>
+            <div><dt>cost</dt><dd>down 97.6%</dd></div>
+            <div><dt>efficiency</dt><dd>3.4x</dd></div>
+          </dl>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">document → chatbot</span>
+          <canvas id="sabaViz" role="img" aria-label="A document is parsed into extracted chunks; a question is asked, the matching chunk is retrieved, and the chatbot answers from it."></canvas>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div class="case-text">
+          <h3>CatVision: pulling images out of catalog PDFs and matching them to their metadata</h3>
+          <p>A proof of concept that extracts every image from vendor catalog PDFs — using a mix of OCR techniques, since a PDF can be a scanned document or a born-digital one — then identifies each image. Give it an image and it returns all the metadata tied to it. Built on a Flask backend; it improved inventory data-extraction efficiency by 80%.</p>
+          <dl class="report">
+            <div><dt>input</dt><dd>scanned and digital PDFs</dd></div>
+            <div><dt>extraction</dt><dd>OCR, image detection</dd></div>
+            <div><dt>query</dt><dd>image → its metadata</dd></div>
+            <div><dt>efficiency</dt><dd>up 80%</dd></div>
+          </dl>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">image → metadata</span>
+          <canvas id="catViz" role="img" aria-label="A grid of catalog PDF pages, each tagged scanned or digital, containing extracted images. Selecting a query image highlights its matches across the pages and shows the metadata: file, page, size and type."></canvas>
+          <div class="panel-ctl"><span class="mono c-muted">Tap an image to match it</span></div>
+        </figure>
+      </article>
+
+      <ul class="rows">
+        <li>
+          <h3>Agentic SaaS</h3>
+          <p>Worked on an agentic SaaS architecture and developed REST and A2A (Agent-to-Agent) APIs.</p>
+        </li>
+        <li>
+          <h3>GreenDesk</h3>
+          <p>Developed a cross-platform project-management app in Flutter and Dart that integrates Jira REST APIs.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- VineNet -->
+    <section class="sec" id="projects" aria-labelledby="h-projects">
+      <header class="sec-head">
+        <h2 id="h-projects">Projects</h2>
+        <p>VineNet, April 2024.</p>
+      </header>
+      <article class="case">
+        <div class="case-text">
+          <h3>VineNet, first place at the Yamaha AI Innovation 3.0 Hackathon</h3>
+          <p>A U-Net for semantic segmentation of grape bunches in high-resolution vineyard images. Albumentations augmentation grew the training set from 719 to 2,000+ images, and the model scored highest in the hackathon.</p>
+          <dl class="report">
+            <div><dt>precision</dt><dd>86%</dd></div>
+            <div><dt>recall</dt><dd>81%</dd></div>
+            <div><dt>mean IoU</dt><dd>71%</dd></div>
+            <div><dt>training images</dt><dd>719 to 2,000+</dd></div>
+          </dl>
+          <p class="links"><a href="https://github.com/lassmara/Vinenet" rel="noopener">github.com/lassmara/Vinenet</a></p>
+        </div>
+        <figure class="panel">
+          <span class="panel-tag">input and segmentation</span>
+          <svg id="vine" viewBox="0 0 600 310" role="img" aria-label="Illustration of grape bunches. Drag the slider to reveal the segmentation mask over the input image."></svg>
+          <div class="panel-ctl">
+            <label for="vineRange">Segment</label>
+            <input id="vineRange" type="range" min="0" max="100" value="55">
+            <output id="vineOut" for="vineRange" class="mono">mask 55%</output>
+          </div>
+        </figure>
+      </article>
+    </section>
+
+    <section class="sec" id="skills" aria-labelledby="h-skills">
+      <header class="sec-head">
+        <h2 id="h-skills">Skills</h2>
+        <p>What I work with, and what I studied.</p>
+      </header>
+      <div class="skills">
+        <div><h3>Languages</h3><p>Python, C++, C#, SQL</p></div>
+        <div><h3>AI and data</h3><p>Machine Learning, Deep Learning, Computer Vision (CNN, U-Net, OpenCV), Generative AI (LLMs, RAG, LangChain, OpenAI API), PyTorch, TensorFlow, Scikit-learn, Pandas, NumPy</p></div>
+        <div><h3>Web and backend</h3><p>FastAPI, Flask, Node.js, Express.js, React.js, Flutter, REST APIs</p></div>
+        <div><h3>Databases</h3><p>SQLite, MySQL, MongoDB</p></div>
+        <div><h3>Other</h3><p>Linux, Git, Docker, Firebase, Anaconda, MATLAB</p></div>
+        <div><h3>Coursework</h3><p>Probability and Statistics, Data Science, Advanced Deep Learning, Data Structures and Algorithms, DBMS</p></div>
+      </div>
+    </section>
+
+    <section class="sec" id="education" aria-labelledby="h-edu">
+      <header class="sec-head">
+        <h2 id="h-edu">Education and achievements</h2>
+      </header>
+      <div class="edu-grid">
+        <div>
+          <ol class="path" id="path">
+            <li class="stop">
+              <p class="when">Nov 2021 to May 2025</p>
+              <h3>B.Tech, Electrical Engineering</h3>
+              <p>Indian Institute of Technology, Mandi, Himachal Pradesh. CGPA 7.98/10.00.</p>
+            </li>
+            <li class="stop">
+              <p class="when">May 2019 to Mar 2021</p>
+              <h3>Class XII, State Board</h3>
+              <p>Narayana Junior College, Hyderabad, Telangana. 96.00%.</p>
+            </li>
+          </ol>
+        </div>
+        <ul class="wins">
+          <li><strong>1st place</strong><span>Yamaha AI Innovation 3.0 Hackathon, with VineNet.</span></li>
+          <li><strong>Top 3,000</strong><span>Selected for Amazon ML Summer School 2024, from across India, for advanced ML and AI training.</span></li>
+          <li><strong>Top 1%</strong><span>Open source contributor at GirlScript Summer of Code 2024, earning 6 of 8 badges.</span></li>
+          <li><strong>Tech talk</strong><span>Delivered an internal talk on the ECG document unwarping pipeline at Anumana.</span></li>
+          <li><strong>Olympiad</strong><span>Qualified for the Regional Mathematical Olympiad, advancing toward the international selection process.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="sec" id="contact" aria-labelledby="h-contact">
+      <header class="sec-head">
+        <h2 id="h-contact">Contact</h2>
+      </header>
+      <div class="contact">
+        <p class="big-mail"><a id="mailLink" href="mailto:lassmara1906@gmail.com">lassmara1906@gmail.com</a></p>
+        <p class="note">Email is the fastest way to reach me.</p>
+        <ul class="links">
+          <li><button class="btn small" id="copyMail" type="button">Copy email address</button></li>
+          <li><a class="btn small" href="https://github.com/lassmara" rel="noopener">GitHub</a></li>
+          <li><a class="btn small" href="https://www.linkedin.com/in/sai-sruthi-maraboina/" rel="noopener">LinkedIn</a></li>
+          <li><a class="btn small" href="resume.pdf" data-resume>Resume</a></li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <p>The diagrams beside each project are simulated illustrations. Every number and date comes from my resume.</p>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+</body>
+</html>
