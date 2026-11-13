@@ -1,0 +1,8 @@
+Fonts bundled with this site (Latin-script subsets, converted to WOFF):
+
+TeX Gyre Adventor - GUST Font License (free to use and redistribute).
+  https://www.gust.org.pl/projects/e-foundry/tex-gyre
+Latin Modern Mono - GUST Font License.
+  https://www.gust.org.pl/projects/e-foundry/latin-modern
+Inter - SIL Open Font License 1.1.
+  https://rsms.me/inter/
