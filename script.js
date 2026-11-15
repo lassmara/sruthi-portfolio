@@ -2,7 +2,8 @@
    Personal details
 ================================================================== */
 const SITE = {
-  email: "lassmara1906@gmail.com"
+  email: "lassmara1906@gmail.com",
+  bg: "aurora"            // background: "aurora", "grain" or "clean"
 };
 
 (() => {
@@ -45,7 +46,7 @@ const SITE = {
   function setTheme(t) {
     root.setAttribute("data-theme", t);
     themeBtn.setAttribute("aria-pressed", String(t === "dark"));
-    if (themeColor) themeColor.content = t === "dark" ? "#170F18" : "#FFF3F0";
+    if (themeColor) themeColor.content = t === "dark" ? "#170F18" : "#FAF8F6";
     try { localStorage.setItem("theme", t); } catch (e) {}
     refreshColors();
     modules.forEach((m) => m.redraw && m.redraw());
@@ -103,7 +104,7 @@ const SITE = {
       nodes.forEach((n, i) => {
         const a = -Math.PI / 2 + (i / nodes.length) * TAU;
         n.hx = hub.x + Math.cos(a) * rx; n.hy = hub.y + Math.sin(a) * ry;
-        if (!placed) { n.x = n.hx; n.y = n.hy; }
+        if (!placed) { if (RM) { n.x = n.hx; n.y = n.hy; } else { n.x = hub.x + (Math.random() - 0.5) * 10 * dpr; n.y = hub.y + (Math.random() - 0.5) * 10 * dpr; } } // fan out from the hub on load
       });
       placed = true;
     }
@@ -120,20 +121,30 @@ const SITE = {
     function go(href) { const el = $(href); if (el) el.scrollIntoView({ behavior: RM ? "auto" : "smooth" }); }
 
     function step(dt) {
-      t += dt;
+      // drift only while nobody is hovering the map, and never away from the mouse
+      const hovering = !!(ptr && at(ptr.x, ptr.y));
+      if (!hovering && !drag) t += dt;
       for (const n of nodes) {
-        if (n === drag) { n.x += (drag.tx - n.x) * 0.4; n.y += (drag.ty - n.y) * 0.4; n.vx = n.vy = 0; }
+        const near = ptr && Math.abs(ptr.x - n.x) < n.w / 2 + 14 * dpr && Math.abs(ptr.y - n.y) < n.h / 2 + 14 * dpr;
+        if (n === drag) {
+          // rubber band: the node follows the pointer, but stretches no further than LIMIT from its spot
+          const LIMIT = 110 * dpr, ox = drag.tx - n.hx, oy = drag.ty - n.hy, d = Math.hypot(ox, oy) || 1;
+          const reach = LIMIT * Math.tanh(d / LIMIT);
+          const tx = n.hx + ox / d * reach, ty = n.hy + oy / d * reach;
+          n.x += (tx - n.x) * 0.4; n.y += (ty - n.y) * 0.4; n.vx = n.vy = 0;
+        }
+        else if (near && !(n.snap > 0)) { n.vx = n.vy = 0; }                         // hold still under the cursor so it can be clicked
         else {
-          const dx = n.hx + Math.cos(t * 0.5 + n.seed) * 9 * dpr, dy = n.hy + Math.sin(t * 0.6 + n.seed) * 9 * dpr;
-          n.vx += (dx - n.x) * 0.014; n.vy += (dy - n.y) * 0.014;
+          const dx = n.hx + Math.cos(t * 0.35 + n.seed) * 5 * dpr, dy = n.hy + Math.sin(t * 0.4 + n.seed) * 5 * dpr;
+          const snapping = n.snap > 0; if (snapping) n.snap -= dt;
+          const k = snapping ? 0.04 : 0.014;                       // springier just after release, so it bounces home
+          n.vx += (dx - n.x) * k; n.vy += (dy - n.y) * k;
           for (const m of nodes) if (m !== n) {
             const ddx = n.x - m.x, ddy = n.y - m.y, d2 = ddx * ddx + ddy * ddy, min = (n.w + m.w) * 0.46;
             if (d2 < min * min && d2 > 1) { const d = Math.sqrt(d2), f = (min - d) / d * 0.03; n.vx += ddx * f; n.vy += ddy * f; }
           }
-          if (ptr) { const ddx = n.x - ptr.x, ddy = n.y - ptr.y, d2 = ddx * ddx + ddy * ddy, R = 150 * dpr; if (d2 < R * R && d2 > 1) { const d = Math.sqrt(d2), f = (R - d) / d * 0.07; n.vx += ddx * f; n.vy += ddy * f; } }
-          n.vx *= 0.85; n.vy *= 0.85; n.x += n.vx; n.y += n.vy;
+          const damp = snapping ? 0.86 : 0.85; n.vx *= damp; n.vy *= damp; n.x += n.vx; n.y += n.vy;
         }
-        const near = ptr && Math.abs(ptr.x - n.x) < n.w / 2 + 14 * dpr && Math.abs(ptr.y - n.y) < n.h / 2 + 14 * dpr;
         n.hot += ((near || n === drag ? 1 : 0) - n.hot) * 0.2;
       }
     }
@@ -172,6 +183,7 @@ const SITE = {
     });
     cv.addEventListener("pointerup", (e) => {
       if (downAt && Math.hypot(e.clientX - downX, e.clientY - downY) < 8) go(downAt.href);
+      if (drag) drag.snap = 1.4;
       drag = null; downAt = null; if (e.pointerType !== "mouse") ptr = null;
     });
 
@@ -663,7 +675,7 @@ const SITE = {
 
   /* ================================================================
      Interactive layer: section reveals, magnetic targets,
-     a probe cursor that trails an ECG blip, and a live BPM readout.
+     cursor-reactive dot-grid background, and card tilts.
      All of it is opt-in: off under reduced motion and on touch devices.
   ================================================================ */
   const finePointer = window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -698,52 +710,111 @@ const SITE = {
     });
   }
 
-  // Probe cursor: a simple dot that eases after the mouse.
-  if (finePointer && !RM) {
-    const probe = $("#probe");
-    document.body.classList.add("probe-on");
-    probe.style.display = "block"; probe.style.opacity = "0";
+  /* ---------------------------------------------------------------
+     Chapters: each section has its own tint. As you scroll, the page
+     colour and the contour lines blend from one section into the next,
+     and a giant outlined word slides behind each section.
+  --------------------------------------------------------------- */
+  const CHAPTERS = [
+    { id: "top",       word: "",          light: ["#FAF8F6", "#1A1420"], dark: ["#170F18", "#E9E1EA"] },
+    { id: "work",      word: "Now",   light: ["#F1F2FB", "#2340E8"], dark: ["#10122A", "#93A8FF"] },
+    { id: "earlier",   word: "Before",  light: ["#ECF5F7", "#0B7F9C"], dark: ["#0C1B22", "#6FD3EC"] },
+    { id: "projects",  word: "Built",  light: ["#EFF6EC", "#3A7F2F"], dark: ["#0F1C12", "#9BDB8C"] },
+    { id: "skills",    word: "Toolkit",    light: ["#FBF4EA", "#B86E0B"], dark: ["#1E160C", "#F2B866"] },
+    { id: "education", word: "Learning", light: ["#F9EEF2", "#B53A62"], dark: ["#1F0F17", "#F59BBA"] },
+    { id: "contact",   word: "Say hello", light: ["#FAF8F6", "#1A1420"], dark: ["#170F18", "#E9E1EA"] }
+  ].map((c) => ({ ...c, el: document.getElementById(c.id) })).filter((c) => c.el);
 
-    let px = innerWidth / 2, py = innerHeight / 2, rx = px, ry = py, shown = false;
-    document.addEventListener("pointermove", (e) => {
-      if (e.pointerType && e.pointerType !== "mouse") return;
-      px = e.clientX; py = e.clientY;
-      if (!shown) { shown = true; probe.style.opacity = "1"; }
-      const over = e.target.closest && e.target.closest("a, button, [role=button], input, label, #heroGraph, .panel");
-      probe.classList.toggle("big", !!over);
-    }, { passive: true });
-    document.addEventListener("pointerdown", () => probe.classList.add("press"));
-    document.addEventListener("pointerup", () => probe.classList.remove("press"));
-    document.addEventListener("mouseleave", () => { probe.style.opacity = "0"; });
+  const hex2rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const mixHex = (a, b, t) => { const A = hex2rgb(a), B = hex2rgb(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+  const smooth = (t) => t * t * (3 - 2 * t);
 
-    fx = { frame() {
-      rx += (px - rx) * 0.3; ry += (py - ry) * 0.3;
-      probe.style.transform = `translate(${rx}px, ${ry}px)`;
-    } };
+  // ghost words
+  const ghosts = [];
+  CHAPTERS.forEach((c) => {
+    if (!c.word || !c.el.classList.contains("sec")) return;
+    const g = document.createElement("span");
+    g.className = "ghost"; g.setAttribute("aria-hidden", "true"); g.textContent = c.word;
+    c.el.prepend(g); ghosts.push({ g, sec: c.el });
+  });
+
+  let page = "#FAF8F6", line = "#1A1420";
+  function chapterTick() {
+    const theme = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const mid = innerHeight * 0.55, band = innerHeight * 0.5;
+    let i = 0;
+    for (let k = 0; k < CHAPTERS.length; k++) if (CHAPTERS[k].el.getBoundingClientRect().top <= mid) i = k;
+    const cur = CHAPTERS[i], nxt = CHAPTERS[Math.min(i + 1, CHAPTERS.length - 1)];
+    let t = 0;
+    if (nxt !== cur) { const nt = nxt.el.getBoundingClientRect().top; t = smooth(clamp((mid + band - nt) / band, 0, 1)); }
+    page = mixHex(cur[theme][0], nxt[theme][0], t);
+    line = mixHex(cur[theme][1], nxt[theme][1], t);
+    root.style.setProperty("--page", page);
+    if (!RM) ghosts.forEach(({ g, sec }) => {
+      const r = sec.getBoundingClientRect();
+      const p = (innerHeight - r.top) / (innerHeight + r.height);          // 0 entering … 1 leaving
+      g.style.transform = `translate3d(${((0.25 - p) * 0.9 * innerWidth).toFixed(1)}px, 0, 0)`;
+    });
   }
 
-  // Tilt cards toward the cursor, and a soft spotlight that follows it in the hero.
+  /* Background. Modes: "aurora" (drifting soft colour light + fine grain),
+     "grain" (paper grain over the section colours), "clean" (section colours only).
+     Set SITE.bg, or preview any mode with ?bg=aurora|grain|clean in the address. */
+  const BG_MODE = new URLSearchParams(location.search).get("bg") || SITE.bg || "aurora";
+  root.classList.add("bg-" + BG_MODE);
+  const bg = (() => {
+    if (BG_MODE !== "aurora") return { frame() {}, resize() {} };
+    const cv = document.createElement("canvas");
+    cv.id = "bg"; cv.setAttribute("aria-hidden", "true"); document.body.prepend(cv);
+    const cx = cv.getContext("2d");
+    const SCALE = 1 / 6;                                  // draw small, let the browser blur it up
+    let W = 1, H = 1;
+    const blobs = [
+      { sx: 0.050, sy: 0.043, ph: 0.0, r: 0.62 },
+      { sx: 0.037, sy: 0.055, ph: 2.1, r: 0.55 },
+      { sx: 0.061, sy: 0.032, ph: 4.0, r: 0.50 },
+      { sx: 0.029, sy: 0.047, ph: 5.3, r: 0.46 }
+    ];
+    function resize() { W = cv.width = Math.max(2, Math.round(innerWidth * SCALE)); H = cv.height = Math.max(2, Math.round(innerHeight * SCALE)); }
+    resize(); window.addEventListener("resize", resize);
+    function frame(t) {
+      const dark = root.getAttribute("data-theme") === "dark";
+      const pal = dark ? [line, "#F59BBA", "#6FD3EC", "#F2B866"] : [line, "#D6455D", "#0B7F9C", "#E4A11B"];
+      cx.clearRect(0, 0, W, H);
+      const scrollShift = window.scrollY / Math.max(1, document.documentElement.scrollHeight) * 6.0;
+      blobs.forEach((b, i) => {
+        const x = (0.5 + 0.42 * Math.sin(t * b.sx + b.ph + scrollShift)) * W;
+        const y = (0.5 + 0.40 * Math.cos(t * b.sy + b.ph * 1.3 + scrollShift * 0.7)) * H;
+        const r = b.r * Math.max(W, H);
+        const g = cx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, rgba(pal[i], dark ? 0.34 : (i === 0 ? 0.26 : 0.18)));
+        g.addColorStop(1, rgba(pal[i], 0));
+        cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+      });
+    }
+    return { frame, resize };
+  })();
+
+  chapterTick(); bg.frame(0);
+  window.addEventListener("scroll", () => { chapterTick(); if (RM) bg.frame(0); }, { passive: true });
+  window.addEventListener("resize", () => { chapterTick(); bg.frame(performance.now() / 1000); });
+  if (!RM && BG_MODE === "aurora") {
+    let lastBg = 0;
+    const loop = (ts) => { if (ts - lastBg > 33) { lastBg = ts; bg.frame(ts / 1000); } requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+  new MutationObserver(chapterTick).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // Tilt the skills and achievement cards toward the cursor.
   if (finePointer && !RM) {
     const tilt = (el, max) => {
       el.addEventListener("pointermove", (e) => {
         const r = el.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
-        el.style.transform = `perspective(700px) rotateX(${(-py * max).toFixed(2)}deg) rotateY(${(px * max).toFixed(2)}deg) translateY(-4px)`;
+        const ox = (e.clientX - r.left) / r.width - 0.5, oy = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(700px) rotateX(${(-oy * max).toFixed(2)}deg) rotateY(${(ox * max).toFixed(2)}deg) translateY(-4px)`;
       });
       el.addEventListener("pointerleave", () => { el.style.transform = ""; });
     };
     $$(".skills > div, .wins li").forEach((el) => tilt(el, 7));
-
-    const hero = $("#top");
-    if (hero) {
-      const glow = document.createElement("div");
-      glow.className = "hero-glow"; glow.setAttribute("aria-hidden", "true");
-      hero.appendChild(glow);
-      hero.addEventListener("pointermove", (e) => {
-        const r = hero.getBoundingClientRect();
-        glow.style.left = (e.clientX - r.left) + "px"; glow.style.top = (e.clientY - r.top) + "px"; glow.style.opacity = "1";
-      });
-      hero.addEventListener("pointerleave", () => { glow.style.opacity = "0"; });
-    }
   }
 })();
